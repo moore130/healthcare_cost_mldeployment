@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block main %}
+<!-- Modal -->
+<div class='style'>
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Estimation Results</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h5>Prediction Input:</h5>
+                <div>Age: <span id="ag"></span></div>
+                <div>BMI: <span id="bm"></span></div>
+                <div>Number of Children: <span id="ch"></span></div>
+                <div>If female insert 1 if male insert 0: <span id="sf"></span></div>
+                <div>If male insert 1 if female insert 0: <span id="sm"></span></div>
+                <div>If non-smoker insert 1 if smoker insert 0: <span id="sn"></span></div>
+                <div>If smoker insert 1 if non-smoker insert 0: <span id="sy"></span></div>
+                <h5 class="pt-3">Prediction Charges:</h5>
+                <div id="estimation"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <a class="btn btn-primary" href="/results" role="button">View DB</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container pt-5">
+    <div class="row justify-content-md-center">
+        <div class="col-md-4">
+            <h1>Medical Expenditure Prediction</h1>
+            <form action="" id="post-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="age">Age</label>
+                    <input type="number" class="form-control" id="age" placeholder="" required>
+                </div>
+                <div class="form-group">
+                    <label for="bmi">BMI</label>
+                    <input type="number" step="0.111" class="form-control" id="bmi" placeholder="" required>
+                </div>
+                <div class="form-group">
+                    <label for="children">Number of Children</label>
+                    <input type="number" class="form-control" id="children" placeholder="" required>
+                </div>
+                <div class="form-group">
+                    <label for="sex_female">If female insert 1 if male insert 0</label>
+                    <input type="number" class="form-control" id="sex_female" placeholder="" required>
+                </div>
+                <div class="form-group">
+                    <label for="sex_male">If male insert 1 if female insert 0 </label>
+                    <input type="number" class="form-control" id="sex_male" placeholder="" required>
+                </div>
+                <div class="form-group">
+                    <label for="smoke_no">If non-smoker insert 1 if smoker insert 0</label>
+                    <input type="number" class="form-control" id="smoke_no" placeholder="" required>
+                </div>
+                <div class="form-group">
+                    <label for="smoke_yes">If smoker insert 1 if non-smoker insert 0 </label>
+                    <input type="number" class="form-control" id="smoke_yes" placeholder="" required>
+                </div>
+                <button type="submit" value="Submit" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" style="margin-bottom: 5%";>Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+<script>
+    $(document).on('submit', '#post-form',function(e){
+        e.preventDefault();
+        $.ajax({
+            type:'POST',
+            url:'{% url "estimate:submit_estimation" %}',
+            data:{
+                age:$('#age').val(),
+                bmi:$('#bmi').val(),
+                children:$('#children').val(),
+                sex_female:$('#sex_female').val(),
+                sex_male:$('#sex_male').val(),
+                smoke_no:$('#smoke_no').val(),
+                smoke_yes:$('#smoke_yes').val(),
+                csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+                action: 'post'
+            },
+            success:function(json) {
+                document.forms["post-form"].reset();
+                document.getElementById("estimation").innerHTML = json['result']
+                document.getElementById("ag").innerHTML = json['age']
+                document.getElementById("bm").innerHTML = json['bmi']
+                document.getElementById("ch").innerHTML = json['children']
+                document.getElementById("sf").innerHTML = json['sex_female']
+                document.getElementById("sm").innerHTML = json['sex_male']
+                document.getElementById("sn").innerHTML = json['smoke_no']
+                document.getElementById("sy").innerHTML = json['smoke_yes']
+            },
+            error : function(xhr,errmsg,err) {
+
+            }
+        });
+    })
+</script>
+
+{% endblock %}
+
